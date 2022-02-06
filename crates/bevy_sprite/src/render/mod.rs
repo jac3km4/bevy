@@ -23,7 +23,7 @@ use bevy_render::{
     render_resource::{std140::AsStd140, *},
     renderer::{RenderDevice, RenderQueue},
     texture::{BevyDefault, Image},
-    view::{Msaa, ViewUniform, ViewUniformOffset, ViewUniforms, Visibility},
+    view::{Msaa, OutsideFrustum, ViewUniform, ViewUniformOffset, ViewUniforms, Visibility},
     RenderWorld,
 };
 use bevy_transform::components::GlobalTransform;
@@ -153,7 +153,7 @@ impl SpecializedPipeline for SpritePipeline {
                 entry_point: "fragment".into(),
                 targets: vec![ColorTargetState {
                     format: TextureFormat::bevy_default(),
-                    blend: Some(BlendState::ALPHA_BLENDING),
+                    blend: Some(BlendState::PREMULTIPLIED_ALPHA_BLENDING),
                     write_mask: ColorWrites::ALL,
                 }],
             }),
@@ -232,13 +232,19 @@ pub fn extract_sprite_events(
 pub fn extract_sprites(
     mut render_world: ResMut<RenderWorld>,
     texture_atlases: Res<Assets<TextureAtlas>>,
-    sprite_query: Query<(&Visibility, &Sprite, &GlobalTransform, &Handle<Image>)>,
-    atlas_query: Query<(
-        &Visibility,
-        &TextureAtlasSprite,
-        &GlobalTransform,
-        &Handle<TextureAtlas>,
-    )>,
+    sprite_query: Query<
+        (&Visibility, &Sprite, &GlobalTransform, &Handle<Image>),
+        Without<OutsideFrustum>,
+    >,
+    atlas_query: Query<
+        (
+            &Visibility,
+            &TextureAtlasSprite,
+            &GlobalTransform,
+            &Handle<TextureAtlas>,
+        ),
+        Without<OutsideFrustum>,
+    >,
 ) {
     let mut extracted_sprites = render_world.get_resource_mut::<ExtractedSprites>().unwrap();
     extracted_sprites.sprites.clear();

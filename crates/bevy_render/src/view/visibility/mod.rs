@@ -14,6 +14,17 @@ use crate::{
     primitives::{Aabb, Frustum},
 };
 
+/// A component that indicates that an entity is outside the view frustum.
+/// Any entity with this component will be ignored during rendering.
+///
+/// # Note
+/// This does not handle multiple "views" properly as it is a "global" filter.
+/// This will be resolved in the future. For now, disable frustum culling if you
+/// need to support multiple views (ex: set the `SpriteSettings::frustum_culling_enabled` resource).
+#[derive(Component, Default, Clone, Reflect, Debug)]
+#[reflect(Component)]
+pub struct OutsideFrustum;
+
 /// User indication of whether an entity is visible
 #[derive(Component, Clone, Reflect, Debug)]
 #[reflect(Component)]

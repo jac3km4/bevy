@@ -1,5 +1,6 @@
 mod bundle;
 mod dynamic_texture_atlas_builder;
+mod frustum_culling;
 mod mesh2d;
 mod rect;
 mod render;
@@ -32,10 +33,12 @@ use bevy_app::prelude::*;
 use bevy_asset::{AddAsset, Assets, HandleUntyped};
 use bevy_core_pipeline::Transparent2d;
 use bevy_ecs::schedule::{ParallelSystemDescriptorCoercion, SystemLabel};
+use bevy_ecs::system::IntoSystem;
 use bevy_reflect::TypeUuid;
 use bevy_render::{
     render_phase::AddRenderCommand,
     render_resource::{Shader, SpecializedPipelines},
+    view::OutsideFrustum,
     RenderApp, RenderStage,
 };
 
@@ -57,8 +60,18 @@ impl Plugin for SpritePlugin {
         shaders.set_untracked(SPRITE_SHADER_HANDLE, sprite_shader);
         app.add_asset::<TextureAtlas>()
             .register_type::<Sprite>()
+            .register_type::<OutsideFrustum>()
             .add_plugin(Mesh2dRenderPlugin)
             .add_plugin(ColorMaterialPlugin);
+
+        app.add_system_to_stage(
+            CoreStage::PostUpdate,
+            frustum_culling::sprite_frustum_culling_system.system(),
+        )
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            frustum_culling::atlas_frustum_culling_system.system(),
+        );
 
         if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app

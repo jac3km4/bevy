@@ -14,7 +14,7 @@ pub use projection::*;
 
 use crate::{
     primitives::Aabb,
-    view::{ComputedVisibility, ExtractedView, Visibility, VisibleEntities},
+    view::{ComputedVisibility, ExtractedView, OutsideFrustum, Visibility, VisibleEntities},
     RenderApp, RenderStage,
 };
 use bevy_app::{App, CoreStage, Plugin};
@@ -76,7 +76,7 @@ fn extract_cameras(
     mut commands: Commands,
     active_cameras: Res<ActiveCameras>,
     windows: Res<Windows>,
-    query: Query<(Entity, &Camera, &GlobalTransform, &VisibleEntities)>,
+    query: Query<(Entity, &Camera, &GlobalTransform, &VisibleEntities), Without<OutsideFrustum>>,
 ) {
     let mut entities = HashMap::default();
     for camera in active_cameras.iter() {
